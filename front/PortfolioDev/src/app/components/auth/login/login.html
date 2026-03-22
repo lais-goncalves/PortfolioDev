@@ -1,0 +1,46 @@
+<div class="d-flex align-items-center justify-content-center h-75 py-4">
+  <main class="form-signin w-25 m-auto">
+    <form [formGroup]="form">
+      <div class="mb-5">
+        <h1 class="fw-normal d-block">Login</h1>
+      </div>
+
+      <div class="row mb-3">
+        <div class="form-floating col-12">
+          <input
+            class="form-control"
+            id="txtEmail"
+            placeholder="nome@exemplo.com"
+            type="email"
+            formControlName="userName"
+          >
+          <label class="mx-3" for="txtEmail">Username ou E-mail</label>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="form-floating col-12">
+          <input
+            class="form-control"
+            id="txtSenha"
+            placeholder="Password"
+            type="password"
+            formControlName="password"
+          >
+          <label  class="mx-3" for="txtSenha">Senha</label>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-12">
+          <button
+            class="btn btn-primary w-100 py-2 mt-4"
+            type="submit"
+            (click)="logarUsuario()"
+            [disabled]="this.form.invalid"
+          >Logar</button>
+        </div>
+      </div>
+    </form>
+  </main>
+</div>

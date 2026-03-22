@@ -1,0 +1,142 @@
+<div class="d-flex align-items-center justify-content-center h-75 py-4">
+  <main class="form-signin w-25 m-auto">
+    <form [formGroup]="form" class="mb-3">
+      <div class="mb-5">
+        <h1 class="fw-normal d-block">Registro</h1>
+      </div>
+
+      <div class="row mb-3">
+        <div class="form-floating col-12">
+          <input
+            [ngClass]="{'is-invalid': this.verificarControleInvalido('nomeCompleto')}"
+            class="form-control"
+            formControlName="nomeCompleto"
+            id="txtNomeCompleto"
+            placeholder="Nome completo"
+            type="text"
+          >
+          <label class="mx-3" for="txtNomeCompleto">Nome completo</label>
+          <div class="invalid-feedback">
+            <small>
+              @if (controls.nomeCompleto?.errors?.required) {
+                Nome Completo é obrigatório.
+              }
+
+              @if (controls.nomeCompleto?.errors?.minlength || controls.nomeCompleto?.errors?.maxlength) {
+                Nome Completo deve ter entre 3 e 60 caracteres.
+              }
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="form-floating col-12">
+          <input
+            [ngClass]="{'is-invalid': this.verificarControleInvalido('userName')}"
+            class="form-control"
+            formControlName="userName"
+            id="txtUserName"
+            placeholder="Username"
+            type="text"
+          >
+          <label class="mx-3" for="txtUserName">Username</label>
+          <div class="invalid-feedback">
+            <small>
+              @if (controls.userName?.errors?.required) {
+                Username é obrigatório.
+              }
+
+              @if (controls.userName?.errors?.minlength || controls.userName?.errors?.maxlength) {
+                Username deve ter entre 3 e 20 caracteres.
+              }
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="form-floating col-12">
+          <input
+            [ngClass]="{'is-invalid': this.verificarControleInvalido('email')}"
+            class="form-control"
+            formControlName="email"
+            id="txtEmail"
+            placeholder="nome@exemplo.com"
+            type="email"
+          >
+          <label class="mx-3" for="txtEmail">E-mail</label>
+          <div class="invalid-feedback">
+            <small>
+              @if (controls.email?.errors?.required) {
+                E-mail é obrigatório.
+              }
+
+              @if (controls.email?.errors?.email) {
+                Deve ser um e-mail válido.
+              }
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="form-floating col-12">
+          <input
+            [ngClass]="{'is-invalid': this.verificarControleInvalido('password')}"
+            class="form-control"
+            formControlName="password"
+            id="txtSenha"
+            placeholder="Senha"
+            type="password"
+          >
+          <label class="mx-3" for="txtSenha">Senha</label>
+          <div class="invalid-feedback">
+            <small>
+              @if (controls.password?.errors?.required) {
+                Senha é obrigatório.
+              }
+
+              @if (controls.password?.errors?.minlength || controls.password?.errors?.maxlength) {
+                Senha deve ter entre 3 e 20 caracteres.
+              }
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <div class="row my-3">
+        <div class="mb-2">
+          <h5>Você é um(a)...</h5>
+        </div>
+        <div formArrayName="cargos">
+          @for (cargo of cargos; track $index) {
+            <div class="form-check form-check-inline">
+              <input
+                [formControlName]="$index"
+                class="form-check-input"
+                id="inlineCheckbox{{$index}}"
+                type="checkbox"
+                value="{{cargo.valor}}"
+              >
+              <label class="form-check-label" for="inlineCheckbox1{{$index}}">
+                {{ cargo.nome }}
+              </label>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-12">
+          <button
+            (click)="this.registrarUsuario()"
+            class="btn btn-primary w-100 py-2 mt-4"
+            type="submit"
+          >Registrar
+          </button>
+        </div>
+      </div>
+    </form>
+  </main>
+</div>

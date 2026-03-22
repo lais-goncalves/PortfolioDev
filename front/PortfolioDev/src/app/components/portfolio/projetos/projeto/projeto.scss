@@ -1,0 +1,23 @@
+.projeto {
+  position: relative;
+
+  .botoes-flutuantes {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    padding: 5px;
+
+    & .grupo-botoes-flutuantes {
+      display: none;
+
+      button {
+        background-color: white;
+        color: initial;
+      }
+    }
+
+    &:hover .grupo-botoes-flutuantes {
+      display: block;
+    }
+  }
+}

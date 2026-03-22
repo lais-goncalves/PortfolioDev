@@ -1,0 +1,24 @@
+<section class="p-5 text-center">
+  @if (usuarioDono$ | async; as usuario) {
+    <img height="150" src="images/perfil_generico.png" width="150"/>
+    <h1 class="text-body-emphasis">{{ usuario.nomeCompleto }}</h1>
+
+     @if (portfolio$ | async; as portfolio) {
+       <p class="col-lg-8 mx-auto fs-5 text-muted">
+         {{ portfolio.descricao }}
+       </p>
+     }
+
+    <div class="d-inline-flex gap-2 mb-5">
+      <app-stacks></app-stacks>
+
+      <!--    <button class="d-inline-flex align-items-center btn btn-primary btn-lg px-4 rounded-pill" type="button">-->
+      <!--      Call to action-->
+      <!--    </button>-->
+
+      <!--    <button class="btn btn-outline-secondary btn-lg px-4 rounded-pill" type="button">-->
+      <!--      Secondary link-->
+      <!--    </button>-->
+    </div>
+  }
+</section>

@@ -1,0 +1,90 @@
+<div class="col projeto">
+  <div class="card shadow-sm">
+
+    @if (pertenceAoUsuario$ | async) {
+      <div class="botoes-flutuantes">
+        <div class="d-flex justify-content-end align-items-center">
+          <div class="btn-group grupo-botoes-flutuantes">
+            <!--            <button-->
+            <!--              class="btn btn-sm btn-outline-secondary"-->
+            <!--              type="button"-->
+            <!--            >View</button>-->
+
+            <button
+              (click)="this.abrirModalEdicao(modalprojeto)"
+              class="btn btn-sm btn-outline-secondary"
+              type="button"
+            >Editar
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <svg aria-label="Placeholder: Thumbnail"
+         class="bd-placeholder-img card-img-top"
+         height="125"
+         preserveAspectRatio="xMidYMid slice"
+         role="img"
+         width="100%"
+         xmlns="http://www.w3.org/2000/svg">
+      <rect fill="#55595c" height="100%" width="100%"></rect>
+    </svg>
+
+    <div class="card-body">
+      <h2>{{ projeto.nome }}</h2>
+
+      <p class="card-text">{{ projeto.descricao }}</p>
+    </div>
+  </div>
+</div>
+
+<ng-template #modalprojeto let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Editar projeto</h4>
+    <!--    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>-->
+  </div>
+
+  <div class="modal-body">
+    <form [formGroup]="formEdicao" class="p-3">
+      <div class="row mb-3">
+        <label class="obrigatorio" for="txtNomeProjeto">Nome do projeto</label>
+        <input
+          class="form-control"
+          formControlName="nome"
+          id="txtNomeProjeto"
+          name="txtNomeProjeto"
+          placeholder="Nome"
+          type="text">
+      </div>
+
+      <div class="row mb-3">
+        <label for="txtDescricaoProjeto">Descrição</label>
+        <input
+          class="form-control"
+          formControlName="descricao"
+          id="txtDescricaoProjeto"
+          name="txtDescricaoProjeto"
+          placeholder="Descrição"
+          type="text">
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer d-flex flex-row justify-content-between">
+    <button
+      (click)="modal.close()"
+      class="btn btn-outline-secondary"
+      type="button"
+    >Cancelar
+    </button>
+
+    <button
+      (click)="editar()"
+      [disabled]="this.formEdicao.invalid"
+      class="btn btn-outline-primary"
+      type="button"
+    >Editar
+    </button>
+  </div>
+</ng-template>

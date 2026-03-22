@@ -1,0 +1,51 @@
+<nav class="">
+  <header class="d-flex flex-wrap justify-content-center py-3 px-5 mb-4 border-bottom">
+    <a class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none" href="/"
+       routerLink="home">
+      <span class="fs-4">Plataforma Devs</span>
+    </a>
+
+    <ul class="nav nav-pills d-flex flex-row align-items-center">
+      @if (estaLogado$ | async) {
+        @if (usuario$ | async; as usuario) {
+          <li class="nav-item ms-2">
+            <a
+              [routerLink]="['/portfolio', usuario?.userName]"
+              class="nav-link active"
+              href="#"
+              routerLinkActive="active"
+            >Portfolio</a>
+          </li>
+
+          <li class="nav-item ms-2" ngbDropdown role="presentation">
+            <button
+              class="nav-link"
+              ngbDropdownToggle
+              type="button"
+            >{{ usuario.userName }}
+            </button>
+
+            <div ngbDropdownMenu>
+              <!--              <button ngbDropdownItem>Action</button>-->
+              <!--              <div class="dropdown-divider"></div>-->
+              <button
+                (click)="this.logout()"
+                class="link-danger"
+                ngbDropdownItem
+              >Logout
+              </button>
+            </div>
+          </li>
+        }
+      } @else {
+        <li class="nav-item">
+          <a class="nav-link" href="#" routerLink="auth/login" routerLinkActive="active">Login</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="#" routerLink="auth/registrar" routerLinkActive="active">Registro</a>
+        </li>
+      }
+    </ul>
+  </header>
+</nav>

@@ -1,0 +1,21 @@
+/* Importing Bootstrap SCSS file. */
+@import 'bootstrap/scss/bootstrap';
+
+html, body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+label{
+  &.obrigatorio::after {
+    content: '*';
+    color: red;
+    width: 2px;
+    height: 2px;
+    margin-left: 3px;
+    display: inline-block;
+  }
+}

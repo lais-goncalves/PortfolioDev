@@ -1,0 +1,26 @@
+<main>
+  @if (jaCarregouPortfolio$ | async) {
+    @if (portfolio$ | async; as portfolio) {
+      <app-header></app-header>
+
+      <app-secao titulo="Projetos" class="bg-body-tertiary">
+        <app-projetos></app-projetos>
+      </app-secao>
+    }
+
+    @else {
+      @if (pertenceAoUsuario$ | async) {
+        <div class="container text-center d-flex flex-column align-items-center justify-content-center" style="height: 75vh">
+          <h1 class="w-100 d-inline-block">Você ainda não possui um portfólio!</h1>
+          <button class="btn btn-primary mt-3" (click)="criarPortfolio()">Criar portfólio</button>
+        </div>
+      }
+
+      @else {
+        <div class="container text-center d-flex flex-column align-items-center justify-content-center" style="height: 75vh">
+          <h1 class="w-100 d-inline-block">Opa! Este usuário não possui um portfólio.</h1>
+        </div>
+      }
+    }
+  }
+</main>

@@ -1,0 +1,82 @@
+@if (this.pertenceAoUsuario$ | async) {
+  <div class="row d-flex flex-row justify-content-center mb-3">
+    <button
+      class="btn btn-primary py-2 w-auto"
+      (click)="abrirModalNovoProjeto(modalprojetos)"
+    >Adicionar projeto</button>
+  </div>
+}
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+  @if (projetos$ | async; as projetos) {
+    @if (projetos && projetos.length) {
+        @for (projeto of projetos$ | async; track $index) {
+          <app-projeto [projeto]="projeto"></app-projeto>
+        }
+    }
+
+  @else {
+    <div>
+      <h4 class="d-inline-block fw-normal">Nenhum projeto encontrado.</h4>
+    </div>
+  }
+}
+</div>
+
+<ng-template #modalprojetos let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Adicionar projeto</h4>
+<!--    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>-->
+  </div>
+
+  <div class="modal-body">
+    <form [formGroup]="formNovoProjeto" class="p-3">
+      <div class="row mb-3">
+        <label class="obrigatorio" for="txtNomeProjeto">Nome do projeto</label>
+        <input
+          type="text"
+          class="form-control"
+          id="txtNomeProjeto"
+          name="txtNomeProjeto"
+          formControlName="nome"
+          placeholder="Nome">
+      </div>
+
+      <div class="row mb-3">
+        <label for="txtDescricaoProjeto">Descrição</label>
+          <input
+            type="text"
+            class="form-control"
+            id="txtDescricaoProjeto"
+            name="txtDescricaoProjeto"
+            formControlName="descricao"
+            placeholder="Descrição">
+      </div>
+
+<!--      <div class="row mb-3">-->
+<!--        <label for="dteDataCriacao">Data de criação-->
+<!--          <input-->
+<!--            type="date"-->
+<!--            class="form-control"-->
+<!--            id="dteDataCriacao"-->
+<!--            name="dteDataCriacao">-->
+<!--        </label>-->
+<!--      </div>-->
+    </form>
+  </div>
+
+  <div class="modal-footer d-flex flex-row justify-content-between">
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      (click)="modal.close()"
+    >Cancelar</button>
+
+    <button
+      type="button"
+      class="btn btn-outline-primary"
+      [disabled]="this.formNovoProjeto.invalid"
+      (click)="adicionarProjeto()"
+    >Adicionar</button>
+  </div>
+</ng-template>
