@@ -38,6 +38,6 @@ export class HttpService {
   }
 
   public enviarDELETE(url: string, options: any | null = {}) {
-    return this.httpClient.put(this.criarUrl(url), options).pipe(take(1));
+    return this.httpClient.delete(this.criarUrl(url), options).pipe(take(1));
   }
 }

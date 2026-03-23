@@ -49,6 +49,16 @@ export class ProjetoApiService {
   //     }));
   // }
 
+  public adicionarProjeto(projeto: Projeto): Observable<any> {
+    return this
+      .httpService
+      .enviarPOST(
+        '/api/Projetos',
+        projeto,
+        {withCredentials: true}
+      );
+  }
+
   public editarProjeto(id: number, projeto: Projeto): Observable<any | null> {
     return this
       .httpService
@@ -59,13 +69,12 @@ export class ProjetoApiService {
       );
   }
 
-  public adicionarProjeto(projeto: Projeto): Observable<any> {
-    return this
-      .httpService
-      .enviarPOST(
-        '/api/Projetos',
-        projeto,
-        {withCredentials: true}
-      );
+  public deletarProjeto(id: number): Observable<any | null> {
+      return this
+        .httpService
+        .enviarDELETE(
+          `/api/Projetos/Id/${id}`,
+          {withCredentials: true}
+        );
   }
 }

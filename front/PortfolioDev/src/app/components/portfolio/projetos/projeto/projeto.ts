@@ -40,7 +40,7 @@ export class Projeto {
     return this.portfolioService.pertenceAoUsuario$;
   }
 
-  public abrirModalEdicao(content: TemplateRef<any>) {
+  public abrirModal(content: TemplateRef<any>) {
     this.definirForm();
     this.modal.open(content, {centered: true});
   }
@@ -56,7 +56,6 @@ export class Projeto {
       .editarProjeto(this.projeto.id, projeto)
       .subscribe({
         next: (result) => {
-          console.log("ok")
           this.projetoService.recarregar();
           this.spinner.hide();
           this.toastr.success("Projeto editado com sucesso.", "Sucesso!");
@@ -64,6 +63,31 @@ export class Projeto {
         error: error => {
           this.spinner.hide();
           this.toastr.error("Ocorreu um erro ao tentar editar projeto. Tente novamente.", "Erro");
+        },
+        complete: () => {
+          this.modal.dismissAll();
+          this.spinner.hide();
+        }
+      });
+  }
+
+  public excluir(): void {
+    if (this.projeto.id == null) return;
+
+    this.spinner.show();
+
+    this
+      .projetoApiService
+      .deletarProjeto(this.projeto.id)
+      .subscribe({
+        next: () => {
+          this.projetoService.recarregar();
+          this.spinner.hide();
+          this.toastr.success("Projeto deletado com sucesso.", "Sucesso!");
+        },
+        error: error => {
+          this.spinner.hide();
+          this.toastr.error("Ocorreu um erro ao tentar deletar projeto. Tente novamente.", "Erro");
         },
         complete: () => {
           this.modal.dismissAll();

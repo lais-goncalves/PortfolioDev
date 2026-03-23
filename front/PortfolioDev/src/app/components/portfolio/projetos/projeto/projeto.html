@@ -11,7 +11,14 @@
             <!--            >View</button>-->
 
             <button
-              (click)="this.abrirModalEdicao(modalprojeto)"
+              (click)="this.abrirModal(modalExcluir)"
+              class="btn btn-sm btn-outline-secondary"
+              type="button"
+            >Excluir
+            </button>
+
+            <button
+              (click)="this.abrirModal(modalEdicao)"
               class="btn btn-sm btn-outline-secondary"
               type="button"
             >Editar
@@ -39,7 +46,7 @@
   </div>
 </div>
 
-<ng-template #modalprojeto let-modal>
+<ng-template #modalEdicao let-modal>
   <div class="modal-header">
     <h4 class="modal-title" id="modal-basic-title">Editar projeto</h4>
     <!--    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>-->
@@ -84,7 +91,33 @@
       [disabled]="this.formEdicao.invalid"
       class="btn btn-outline-primary"
       type="button"
-    >Editar
+    >Salvar alterações
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #modalExcluir let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Excluir projeto</h4>
+  </div>
+
+  <div class="modal-body">
+    <p>Tem certeza que deseja excluir o projeto '{{projeto.nome}}'?</p>
+  </div>
+
+  <div class="modal-footer d-flex flex-row justify-content-between">
+    <button
+      (click)="modal.close()"
+      class="btn btn-outline-primary"
+      type="button"
+    >Não
+    </button>
+
+    <button
+      (click)="this.excluir()"
+      class="btn btn-outline-danger"
+      type="button"
+    >Sim
     </button>
   </div>
 </ng-template>
