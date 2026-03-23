@@ -39,48 +39,38 @@ public static class DependencyInjection
 	{
 		services
 			.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-			.AddCookie
-			(
-				options =>
-				{
-					options.ExpireTimeSpan = TimeSpan.FromMinutes(120);
-
-					if (builder.Environment.IsDevelopment())
-					{
-						options.Cookie.SameSite = SameSiteMode.Lax;
-						options.Cookie.SecurePolicy = CookieSecurePolicy.None;
-					}
-					else
-					{
-						options.Cookie.SameSite = SameSiteMode.None;
-						options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-					}
-				}
-			);
-
-		services.ConfigureApplicationCookie
-		(
-			o =>
+			.AddCookie(options =>
 			{
-				o.Events = new CookieAuthenticationEvents
+				options.ExpireTimeSpan = TimeSpan.FromMinutes(120);
+
+				// Eventos aqui, no lugar certo
+				options.Events = new CookieAuthenticationEvents
 				{
 					OnRedirectToLogin = ctx =>
 					{
 						if (ctx.Request.Path.StartsWithSegments("/") && ctx.Response.StatusCode == 200)
 							ctx.Response.StatusCode = 401;
-
 						return Task.CompletedTask;
 					},
 					OnRedirectToAccessDenied = ctx =>
 					{
 						if (ctx.Request.Path.StartsWithSegments("/") && ctx.Response.StatusCode == 200)
 							ctx.Response.StatusCode = 403;
-
 						return Task.CompletedTask;
 					}
 				};
-			}
-		);
+
+				if (builder.Environment.IsDevelopment())
+				{
+					options.Cookie.SameSite = SameSiteMode.Lax;
+					options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+				}
+				else
+				{
+					options.Cookie.SameSite = SameSiteMode.None;
+					options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+				}
+			});
 	}
 
 	public static void AddDIPolicies(this IServiceCollection services)

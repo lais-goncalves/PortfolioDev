@@ -12,7 +12,6 @@ builder.Services.AddControllers()
 	.AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
 
 builder.Services.AddDICookies(builder);
-builder.Services.AddDIPolicies();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddDIDbContext(builder.Configuration);
@@ -22,6 +21,7 @@ builder.Services.AddDIInfrastructure();
 builder.Services.AddDIApplication();
 
 builder.Services.AddOpenApi();
+builder.Services.AddDIPolicies();
 
 WebApplication app = builder.Build();
 

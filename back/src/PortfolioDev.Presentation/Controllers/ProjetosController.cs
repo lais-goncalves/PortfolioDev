@@ -17,6 +17,75 @@ public class ProjetosController : ControllerBase
 
 	public ProjetosController(IProjetosService projetosService) { _projetosService = projetosService; }
 
+	#region DML
+	[Authorize(Policy = "Dev")]
+    [HttpPost]
+    public async Task<IActionResult> Post(ProjetoRegistroDto projetoDTO)
+    {
+    	try
+    	{
+    		ResultadoService resultado = await _projetosService.AddProjetoComAuthAsync(projetoDTO);
+    		if (!resultado.Sucesso) return BadRequest(resultado.Erro);
+
+    		var projeto = (ProjetoDto?)resultado.Dados;
+    		if (projeto == null) return NoContent();
+
+    		return Ok(projeto);
+    	}
+    	catch (Exception e)
+    	{
+    		Console.WriteLine(e.Message);
+    		return BadRequest(new Erro(e));
+    	}
+    }
+
+    [Authorize(Policy = "Dev")]
+    [HttpPut("Id/{id:int}")]
+    public async Task<IActionResult> Put(int id, [FromBody] ProjetoAtualizacaoDto projetoDTO)
+    {
+    	try
+    	{
+    		projetoDTO.Id = id;
+    		ResultadoService resultado = await _projetosService
+    			.UpdateProjetoComAuthAsync(projetoDTO);
+
+    		if (!resultado.Sucesso) return BadRequest(resultado.Erro);
+
+    		var projeto = (ProjetoDto?)resultado.Dados;
+    		if (projeto == null) return NoContent();
+
+    		return Ok(projeto);
+    	}
+    	catch (Exception e)
+    	{
+    		Console.WriteLine(e.Message);
+    		return BadRequest(new Erro(e));
+    	}
+    }
+
+	[Authorize(Policy = "Dev")]
+	[HttpDelete("Id/{id:int}")]
+	public async Task<IActionResult> Delete(int id)
+	{
+		try
+		{
+			ResultadoService resultado = await _projetosService
+				.DeleteProjetoComAuthAsync(id);
+
+			if (!resultado.Sucesso) return BadRequest(resultado.Erro);
+
+			return Ok();
+		}
+		catch (Exception e)
+		{
+			Console.WriteLine(e.Message);
+			return BadRequest(new Erro(e));
+		}
+	}
+	#endregion DML
+	
+	
+	#region Buscas
 	[HttpGet("Todos")]
 	public async Task<IActionResult> GetTodos()
 	{
@@ -123,49 +192,5 @@ public class ProjetosController : ControllerBase
 			return BadRequest(new Erro(e));
 		}
 	}
-
-	[Authorize(Policy = "Dev")]
-	[HttpPost]
-	public async Task<IActionResult> Post(ProjetoRegistroDto projetoDTO)
-	{
-		try
-		{
-			ResultadoService resultado = await _projetosService.AddProjetoComAuthAsync(projetoDTO);
-			if (!resultado.Sucesso) return BadRequest(resultado.Erro);
-
-			var projeto = (ProjetoDto?)resultado.Dados;
-			if (projeto == null) return NoContent();
-
-			return Ok(projeto);
-		}
-		catch (Exception e)
-		{
-			Console.WriteLine(e.Message);
-			return BadRequest(new Erro(e));
-		}
-	}
-
-	[Authorize(Policy = "Dev")]
-	[HttpPut("Id/{id:int}")]
-	public async Task<IActionResult> Put(int id, [FromBody] ProjetoAtualizacaoDto projetoDTO)
-	{
-		try
-		{
-			projetoDTO.Id = id;
-			ResultadoService resultado = await _projetosService
-				.UpdateProjetoComAuthAsync(projetoDTO);
-
-			if (!resultado.Sucesso) return BadRequest(resultado.Erro);
-
-			var projeto = (ProjetoDto?)resultado.Dados;
-			if (projeto == null) return NoContent();
-
-			return Ok(projeto);
-		}
-		catch (Exception e)
-		{
-			Console.WriteLine(e.Message);
-			return BadRequest(new Erro(e));
-		}
-	}
+	#endregion Buscas
 }
