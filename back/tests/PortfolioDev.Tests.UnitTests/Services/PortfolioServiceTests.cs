@@ -169,5 +169,29 @@ public class PortfolioServiceTests : IClassFixture<DbContextFixture>
 		Assert.True(resultado.Sucesso);
 		Assert.Null(resultado.Erro);
 	}
+	
+	[Fact]
+	public async Task BuscarPortfoliosAsync_DeveRetornarPortfolios_QuandoPortfoliosExistem() {
+		dynamic contextoEService = await DefinirContextoEService();
+		IPortfoliosService service = contextoEService.Service;
+		
+		ResultadoService resultado = await service.BuscarPortfoliosAsync();
+		
+		Assert.True(resultado.Sucesso);
+		Assert.Null(resultado.Erro);
+		Assert.NotEmpty((PortfolioDto[]?) resultado.Dados ?? []);
+	}
+	
+	[Fact]
+	public async Task BuscarPortfoliosAsync_DeveRetornarVazio_QuandoPortfoliosNaoExistem() {
+		dynamic contextoEService = await DefinirContextoEService(false);
+		IPortfoliosService service = contextoEService.Service;
+		
+		ResultadoService resultado = await service.BuscarPortfoliosAsync();
+		
+		Assert.True(resultado.Sucesso);
+		Assert.Null(resultado.Erro);
+		Assert.Empty((PortfolioDto[]?) resultado.Dados ?? []);
+	}
 	#endregion DML
 }
