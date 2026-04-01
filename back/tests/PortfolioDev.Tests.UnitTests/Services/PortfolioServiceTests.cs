@@ -155,5 +155,19 @@ public class PortfolioServiceTests : IClassFixture<DbContextFixture>
 		Assert.NotNull(resultado.Erro);
 		Assert.Null(resultado.Dados);
 	}
+	
+		
+	[Theory]
+	[InlineData(1)]
+	[InlineData(2)]
+	public async Task DeletePortfolioAsync_DeveDeletarPortfolio_QuandoPortfolioExiste(int portfolioId) {
+		dynamic contextoEService = await DefinirContextoEService();
+		IPortfoliosService service = contextoEService.Service;
+
+		ResultadoService resultado = await service.DeletePortfolioAsync(portfolioId);
+		
+		Assert.True(resultado.Sucesso);
+		Assert.Null(resultado.Erro);
+	}
 	#endregion DML
 }
