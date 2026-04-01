@@ -4,6 +4,7 @@ using PortfolioDev.Application.DTOs;
 using PortfolioDev.Application.DTOs.Atualizacao;
 using PortfolioDev.Application.DTOs.Registro;
 using PortfolioDev.Application.Helpers.Erros;
+using PortfolioDev.Application.Helpers.Mapper;
 using PortfolioDev.Application.Interfaces.Commands;
 using PortfolioDev.Application.Interfaces.Contexts;
 using PortfolioDev.Application.Interfaces.Services;
@@ -19,14 +20,21 @@ public class ProjetoServiceTests : IClassFixture<DbContextFixture>
 {
 	private readonly DbContextFixture _fixture;
 	private readonly Mock<IHttpUserContext> _httpUserContextMock;
-	private readonly Mock<IMapper> _mapperMock;
+	private readonly IMapper _mapper;
 
 	public ProjetoServiceTests(DbContextFixture fixture)
 	{
 		_fixture = fixture;
 
-		_mapperMock = new Mock<IMapper>();
+		_mapper = DefinirMapper();
 		_httpUserContextMock = new Mock<IHttpUserContext>();
+	}
+	
+	private IMapper DefinirMapper()
+	{
+		return new MapperConfiguration(cfg => {
+			cfg.AddProfile<PlataformaDevsProfile>();
+		}).CreateMapper();
 	}
 
 	private async Task<dynamic> DefinirContextoEService(bool? comDados = true)
@@ -38,7 +46,7 @@ public class ProjetoServiceTests : IClassFixture<DbContextFixture>
 		(
 			portfoliosCommands,
 			projetosCommands,
-			_mapperMock.Object,
+			_mapper,
 			_httpUserContextMock.Object
 		);
 
@@ -59,16 +67,7 @@ public class ProjetoServiceTests : IClassFixture<DbContextFixture>
 		dynamic contextoEService = await DefinirContextoEService();
 		IProjetosService service = contextoEService.Service;
 
-		var projeto = new Projeto { Nome = "novo projeto", Descricao = "novo projeto - descrição" };
 		var projetoDto = new ProjetoRegistroDto { Nome = "novo projeto", Descricao = "novo projeto - descrição" };
-
-		_mapperMock
-			.Setup(x => x.Map<Projeto>(projetoDto))
-			.Returns(projeto);
-
-		_mapperMock
-			.Setup(x => x.Map<ProjetoDto?>(projeto))
-			.Returns(new ProjetoDto { Nome = projetoDto.Nome, Descricao = projetoDto.Descricao });
 
 		ResultadoService resultado = await service.AddProjetoAsync(1, projetoDto);
 
@@ -83,16 +82,7 @@ public class ProjetoServiceTests : IClassFixture<DbContextFixture>
 		dynamic contextoEService = await DefinirContextoEService();
 		IProjetosService service = contextoEService.Service;
 
-		var projeto = new Projeto { Nome = "novo projeto", Descricao = "novo projeto - descrição" };
 		var projetoDto = new ProjetoRegistroDto { Nome = "novo projeto", Descricao = "novo projeto - descrição" };
-
-		_mapperMock
-			.Setup(x => x.Map<Projeto>(projetoDto))
-			.Returns(projeto);
-
-		_mapperMock
-			.Setup(x => x.Map<ProjetoDto?>(projeto))
-			.Returns(new ProjetoDto { Nome = projetoDto.Nome, Descricao = projetoDto.Descricao });
 
 		ResultadoService resultado = await service.AddProjetoAsync(99, projetoDto);
 
@@ -119,26 +109,6 @@ public class ProjetoServiceTests : IClassFixture<DbContextFixture>
 			Descricao = projetoNovo.Descricao
 		};
 
-		_mapperMock
-			.Setup(x => x.Map<Projeto>(It.IsAny<ProjetoAtualizacaoDto>()))
-			.Returns(projetoNovo);
-
-		_mapperMock
-			.Setup(x => x.Map<ProjetoDto?>(It.IsAny<Projeto>()))
-			.Returns(new ProjetoDto { Nome = projetoNovo.Nome, Descricao = projetoNovo.Descricao });
-
-		_mapperMock
-			.Setup(x => x.Map(It.IsAny<ProjetoAtualizacaoDto>(), It.IsAny<Projeto>()))
-			.Callback<ProjetoAtualizacaoDto, Projeto>
-			(
-				(dto, projeto) =>
-				{
-					projeto.Nome = dto.Nome;
-					projeto.Descricao = dto.Descricao;
-				}
-			)
-			.Returns<ProjetoAtualizacaoDto, Projeto>((dto, projeto) => projeto);
-
 		ResultadoService resultado = await service.UpdateProjetoAsync(1, projetoNovoDto);
 
 		Assert.True(resultado.Sucesso);
@@ -164,14 +134,6 @@ public class ProjetoServiceTests : IClassFixture<DbContextFixture>
 			Nome = projetoNovo.Nome,
 			Descricao = projetoNovo.Descricao
 		};
-
-		_mapperMock
-			.Setup(x => x.Map<Projeto>(It.IsAny<ProjetoAtualizacaoDto>()))
-			.Returns(projetoNovo);
-
-		_mapperMock
-			.Setup(x => x.Map<ProjetoDto?>(It.IsAny<Projeto>()))
-			.Returns(new ProjetoDto { Nome = projetoNovo.Nome, Descricao = projetoNovo.Descricao });
 
 		ResultadoService resultado = await service.UpdateProjetoAsync(99, projetoNovoDto);
 
@@ -202,32 +164,12 @@ public class ProjetoServiceTests : IClassFixture<DbContextFixture>
 	{
 		dynamic contextoEService = await DefinirContextoEService();
 		IProjetosService service = contextoEService.Service;
-		IProjetosCommands commands = contextoEService.ProjetosCommands;
-
-		Projeto[] projetos = await commands.BuscarProjetosAsync();
-		ProjetoDto[] projetoDtos = projetos.Select
-			(
-				p =>
-				{
-					return new ProjetoDto
-					{
-						Id = p.Id,
-						Descricao = p.Descricao,
-						Nome = p.Nome
-					};
-				}
-			)
-			.ToArray();
-
-		_mapperMock
-			.Setup(x => x.Map<ProjetoDto[]>(It.IsAny<Projeto[]>()))
-			.Returns(projetoDtos);
 
 		ResultadoService resultado = await service.BuscarProjetosAsync();
 
 		Assert.True(resultado.Sucesso);
 		Assert.Null(resultado.Erro);
-		Assert.NotEmpty((ProjetoDto[])resultado.Dados);
+		Assert.NotEmpty((ProjetoDto[]?) resultado.Dados ?? []);
 	}
 
 	[Fact]
@@ -235,32 +177,12 @@ public class ProjetoServiceTests : IClassFixture<DbContextFixture>
 	{
 		dynamic contextoEService = await DefinirContextoEService(false);
 		IProjetosService service = contextoEService.Service;
-		IProjetosCommands commands = contextoEService.ProjetosCommands;
-
-		Projeto[] projetos = await commands.BuscarProjetosAsync();
-		ProjetoDto[] projetoDtos = projetos.Select
-			(
-				p =>
-				{
-					return new ProjetoDto
-					{
-						Id = p.Id,
-						Descricao = p.Descricao,
-						Nome = p.Nome
-					};
-				}
-			)
-			.ToArray();
-
-		_mapperMock
-			.Setup(x => x.Map<ProjetoDto[]>(It.IsAny<Projeto[]>()))
-			.Returns(projetoDtos);
 
 		ResultadoService resultado = await service.BuscarProjetosAsync();
 
 		Assert.True(resultado.Sucesso);
 		Assert.Null(resultado.Erro);
-		Assert.Empty((ProjetoDto[])resultado.Dados);
+		Assert.Empty((ProjetoDto[]?) resultado.Dados ?? []);
 	}
 
 	[Theory]
@@ -270,98 +192,38 @@ public class ProjetoServiceTests : IClassFixture<DbContextFixture>
 	{
 		dynamic contextoEService = await DefinirContextoEService();
 		IProjetosService service = contextoEService.Service;
-		IProjetosCommands commands = contextoEService.ProjetosCommands;
-
-		Projeto[] projetos = await commands.BuscarProjetosPorIdUsuarioAsync(usuarioId);
-		ProjetoDto[] projetoDtos = projetos.Select
-			(
-				p =>
-				{
-					return new ProjetoDto
-					{
-						Id = p.Id,
-						Descricao = p.Descricao,
-						Nome = p.Nome
-					};
-				}
-			)
-			.ToArray();
-
-		_mapperMock
-			.Setup(x => x.Map<ProjetoDto[]>(It.IsAny<Projeto[]>()))
-			.Returns(projetoDtos);
 
 		ResultadoService resultado = await service.BuscarProjetosPorIdUsuarioAsync(usuarioId);
 
 		Assert.True(resultado.Sucesso);
 		Assert.Null(resultado.Erro);
-		Assert.NotEmpty((ProjetoDto[])resultado.Dados);
+		Assert.NotEmpty((ProjetoDto[]?) resultado.Dados ?? []);
 	}
 
 	[Fact]
-	public async Task BuscarProjetosPorIdUsuarioAsync_NaoDeveRetornarProjetos_QuandoUsuarioNaoExiste()
+	public async Task BuscarProjetosPorIdUsuarioAsync_DeveRetornarVazio_QuandoUsuarioNaoExiste()
 	{
 		dynamic contextoEService = await DefinirContextoEService();
 		IProjetosService service = contextoEService.Service;
-		IProjetosCommands commands = contextoEService.ProjetosCommands;
-
-		Projeto[] projetos = await commands.BuscarProjetosPorIdUsuarioAsync(99);
-		ProjetoDto[] projetoDtos = projetos.Select
-			(
-				p =>
-				{
-					return new ProjetoDto
-					{
-						Id = p.Id,
-						Descricao = p.Descricao,
-						Nome = p.Nome
-					};
-				}
-			)
-			.ToArray();
-
-		_mapperMock
-			.Setup(x => x.Map<ProjetoDto[]>(It.IsAny<Projeto[]>()))
-			.Returns(projetoDtos);
 
 		ResultadoService resultado = await service.BuscarProjetosPorIdUsuarioAsync(99);
 
 		Assert.True(resultado.Sucesso);
 		Assert.Null(resultado.Erro);
-		Assert.Empty((ProjetoDto[])resultado.Dados);
+		Assert.Empty((ProjetoDto[]?) resultado.Dados ?? []);
 	}
 
 	[Fact]
-	public async Task BuscarProjetosPorIdUsuarioAsync_NaoDeveRetornarProjetos_QuandoProjetosNaoExistem()
+	public async Task BuscarProjetosPorIdUsuarioAsync_DeveRetornarVazio_QuandoProjetosNaoExistem()
 	{
 		dynamic contextoEService = await DefinirContextoEService();
 		IProjetosService service = contextoEService.Service;
-		IProjetosCommands commands = contextoEService.ProjetosCommands;
-
-		Projeto[] projetos = await commands.BuscarProjetosPorIdUsuarioAsync(3);
-		ProjetoDto[] projetoDtos = projetos.Select
-			(
-				p =>
-				{
-					return new ProjetoDto
-					{
-						Id = p.Id,
-						Descricao = p.Descricao,
-						Nome = p.Nome
-					};
-				}
-			)
-			.ToArray();
-
-		_mapperMock
-			.Setup(x => x.Map<ProjetoDto[]>(It.IsAny<Projeto[]>()))
-			.Returns(projetoDtos);
 
 		ResultadoService resultado = await service.BuscarProjetosPorIdUsuarioAsync(3);
 
 		Assert.True(resultado.Sucesso);
 		Assert.Null(resultado.Erro);
-		Assert.Empty((ProjetoDto[])resultado.Dados);
+		Assert.Empty((ProjetoDto[]?) resultado.Dados ?? []);
 	}
 
 	[Theory]
@@ -371,98 +233,38 @@ public class ProjetoServiceTests : IClassFixture<DbContextFixture>
 	{
 		dynamic contextoEService = await DefinirContextoEService();
 		IProjetosService service = contextoEService.Service;
-		IProjetosCommands commands = contextoEService.ProjetosCommands;
-
-		Projeto[] projetos = await commands.BuscarProjetosPorUserNameUsuarioAsync(userName);
-		ProjetoDto[] projetoDtos = projetos.Select
-			(
-				p =>
-				{
-					return new ProjetoDto
-					{
-						Id = p.Id,
-						Descricao = p.Descricao,
-						Nome = p.Nome
-					};
-				}
-			)
-			.ToArray();
-
-		_mapperMock
-			.Setup(x => x.Map<ProjetoDto[]>(It.IsAny<Projeto[]>()))
-			.Returns(projetoDtos);
 
 		ResultadoService resultado = await service.BuscarProjetosPorUserNameUsuarioAsync(userName);
 
 		Assert.True(resultado.Sucesso);
 		Assert.Null(resultado.Erro);
-		Assert.NotEmpty((ProjetoDto[])resultado.Dados);
+		Assert.NotEmpty((ProjetoDto[]?) resultado.Dados ?? []);
 	}
 
 	[Fact]
-	public async Task BuscarProjetosPorUserNameUsuarioAsync_NaoDeveRetornarProjetos_QuandoUsuarioNaoExiste()
+	public async Task BuscarProjetosPorUserNameUsuarioAsync_DeveRetornarVazio_QuandoUsuarioNaoExiste()
 	{
 		dynamic contextoEService = await DefinirContextoEService();
 		IProjetosService service = contextoEService.Service;
-		IProjetosCommands commands = contextoEService.ProjetosCommands;
-
-		Projeto[] projetos = await commands.BuscarProjetosPorUserNameUsuarioAsync("teste");
-		ProjetoDto[] projetoDtos = projetos.Select
-			(
-				p =>
-				{
-					return new ProjetoDto
-					{
-						Id = p.Id,
-						Descricao = p.Descricao,
-						Nome = p.Nome
-					};
-				}
-			)
-			.ToArray();
-
-		_mapperMock
-			.Setup(x => x.Map<ProjetoDto[]>(It.IsAny<Projeto[]>()))
-			.Returns(projetoDtos);
 
 		ResultadoService resultado = await service.BuscarProjetosPorUserNameUsuarioAsync("teste");
 
 		Assert.True(resultado.Sucesso);
 		Assert.Null(resultado.Erro);
-		Assert.Empty((ProjetoDto[])resultado.Dados);
+		Assert.Empty((ProjetoDto[]?) resultado.Dados ?? []);
 	}
 
 	[Fact]
-	public async Task BuscarProjetosPorUserNameUsuarioAsync_NaoDeveRetornarProjetos_QuandoProjetosNaoExistem()
+	public async Task BuscarProjetosPorUserNameUsuarioAsync_DeveRetornarVazio_QuandoProjetosNaoExistem()
 	{
 		dynamic contextoEService = await DefinirContextoEService();
 		IProjetosService service = contextoEService.Service;
-		IProjetosCommands commands = contextoEService.ProjetosCommands;
-
-		Projeto[] projetos = await commands.BuscarProjetosPorUserNameUsuarioAsync("usuario3");
-		ProjetoDto[] projetoDtos = projetos.Select
-			(
-				p =>
-				{
-					return new ProjetoDto
-					{
-						Id = p.Id,
-						Descricao = p.Descricao,
-						Nome = p.Nome
-					};
-				}
-			)
-			.ToArray();
-
-		_mapperMock
-			.Setup(x => x.Map<ProjetoDto[]>(It.IsAny<Projeto[]>()))
-			.Returns(projetoDtos);
 
 		ResultadoService resultado = await service.BuscarProjetosPorUserNameUsuarioAsync("usuario3");
 
 		Assert.True(resultado.Sucesso);
 		Assert.Null(resultado.Erro);
-		Assert.Empty((ProjetoDto[])resultado.Dados);
+		Assert.Empty((ProjetoDto[]?) resultado.Dados ?? []);
 	}
 
 	[Theory]
@@ -472,98 +274,38 @@ public class ProjetoServiceTests : IClassFixture<DbContextFixture>
 	{
 		dynamic contextoEService = await DefinirContextoEService();
 		IProjetosService service = contextoEService.Service;
-		IProjetosCommands commands = contextoEService.ProjetosCommands;
-
-		Projeto[] projetos = await commands.BuscarProjetosPorIdPortfolioAsync(portfolioId);
-		ProjetoDto[] projetoDtos = projetos.Select
-			(
-				p =>
-				{
-					return new ProjetoDto
-					{
-						Id = p.Id,
-						Descricao = p.Descricao,
-						Nome = p.Nome
-					};
-				}
-			)
-			.ToArray();
-
-		_mapperMock
-			.Setup(x => x.Map<ProjetoDto[]>(It.IsAny<Projeto[]>()))
-			.Returns(projetoDtos);
 
 		ResultadoService resultado = await service.BuscarProjetosPorIdPortfolioAsync(portfolioId);
 
 		Assert.True(resultado.Sucesso);
 		Assert.Null(resultado.Erro);
-		Assert.NotEmpty((ProjetoDto[])resultado.Dados);
+		Assert.NotEmpty((ProjetoDto[]?) resultado.Dados ?? []);
 	}
 
 	[Fact]
-	public async Task BuscarProjetosPorIdPortfolioAsync_NaoDeveRetornarProjetos_QuandoPortfolioNaoExiste()
+	public async Task BuscarProjetosPorIdPortfolioAsync_DeveRetornarVazio_QuandoPortfolioNaoExiste()
 	{
 		dynamic contextoEService = await DefinirContextoEService();
 		IProjetosService service = contextoEService.Service;
-		IProjetosCommands commands = contextoEService.ProjetosCommands;
-
-		Projeto[] projetos = await commands.BuscarProjetosPorIdPortfolioAsync(99);
-		ProjetoDto[] projetoDtos = projetos.Select
-			(
-				p =>
-				{
-					return new ProjetoDto
-					{
-						Id = p.Id,
-						Descricao = p.Descricao,
-						Nome = p.Nome
-					};
-				}
-			)
-			.ToArray();
-
-		_mapperMock
-			.Setup(x => x.Map<ProjetoDto[]>(It.IsAny<Projeto[]>()))
-			.Returns(projetoDtos);
 
 		ResultadoService resultado = await service.BuscarProjetosPorIdPortfolioAsync(99);
 
 		Assert.True(resultado.Sucesso);
 		Assert.Null(resultado.Erro);
-		Assert.Empty((ProjetoDto[])resultado.Dados);
+		Assert.Empty((ProjetoDto[]?) resultado.Dados ?? []);
 	}
 
 	[Fact]
-	public async Task BuscarProjetosPorIdPortfolioAsync_NaoDeveRetornarProjetos_QuandoProjetosNaoExistem()
+	public async Task BuscarProjetosPorIdPortfolioAsync_DeveRetornarVazio_QuandoProjetosNaoExistem()
 	{
 		dynamic contextoEService = await DefinirContextoEService(false);
 		IProjetosService service = contextoEService.Service;
-		IProjetosCommands commands = contextoEService.ProjetosCommands;
-
-		Projeto[] projetos = await commands.BuscarProjetosPorIdPortfolioAsync(99);
-		ProjetoDto[] projetoDtos = projetos.Select
-			(
-				p =>
-				{
-					return new ProjetoDto
-					{
-						Id = p.Id,
-						Descricao = p.Descricao,
-						Nome = p.Nome
-					};
-				}
-			)
-			.ToArray();
-
-		_mapperMock
-			.Setup(x => x.Map<ProjetoDto[]>(It.IsAny<Projeto[]>()))
-			.Returns(projetoDtos);
 
 		ResultadoService resultado = await service.BuscarProjetosPorIdPortfolioAsync(99);
 
 		Assert.True(resultado.Sucesso);
 		Assert.Null(resultado.Erro);
-		Assert.Empty((ProjetoDto[])resultado.Dados);
+		Assert.Empty((ProjetoDto[]?) resultado.Dados ?? []);
 	}
 	#endregion Buscas
 }
