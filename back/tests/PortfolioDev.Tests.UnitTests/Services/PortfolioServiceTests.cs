@@ -1,6 +1,7 @@
 using AutoMapper;
 using Moq;
 using PortfolioDev.Application.DTOs;
+using PortfolioDev.Application.DTOs.Atualizacao;
 using PortfolioDev.Application.DTOs.Registro;
 using PortfolioDev.Application.Helpers.Erros;
 using PortfolioDev.Application.Helpers.Mapper;
@@ -66,7 +67,6 @@ public class PortfolioServiceTests : IClassFixture<DbContextFixture>
 		IPortfoliosService service = contextoEService.Service;
 
 		int usuarioId = 3;
-		var portfolio = new Portfolio { Descricao = "novo portfólio - descrição" };
 		var portfolioDto = new PortfolioRegistroDto { Descricao = "novo portfólio - descrição" };
 
 		ResultadoService resultado = await service.AddPortfolioAsync(usuarioId, portfolioDto);
@@ -85,7 +85,6 @@ public class PortfolioServiceTests : IClassFixture<DbContextFixture>
 		IPortfoliosService service = contextoEService.Service;
 
 		int usuarioId = 1;
-		var portfolio = new Portfolio { Descricao = "novo portfólio - descrição" };
 		var portfolioDto = new PortfolioRegistroDto { Descricao = "novo portfólio - descrição" };
 
 		ResultadoService resultado = await service.AddPortfolioAsync(usuarioId, portfolioDto);
@@ -102,7 +101,6 @@ public class PortfolioServiceTests : IClassFixture<DbContextFixture>
 		IPortfoliosService service = contextoEService.Service;
 
 		int usuarioId = 99;
-		var portfolio = new Portfolio { Descricao = "novo portfólio - descrição" };
 		var portfolioDto = new PortfolioRegistroDto { Descricao = "novo portfólio - descrição" };
 
 		ResultadoService resultado = await service.AddPortfolioAsync(usuarioId, portfolioDto);
@@ -112,9 +110,50 @@ public class PortfolioServiceTests : IClassFixture<DbContextFixture>
 		Assert.Null(resultado.Dados);
 	}
 	
-	[Fact]
-	public async Task UpdatePortfolioAsync_DeveAtualizarPortfolio_QuandoPortfolioExiste() {
+	[Theory]
+	[InlineData(1)]
+	[InlineData(2)]
+	public async Task UpdatePortfolioAsync_DeveAtualizarPortfolio_QuandoPortfolioExiste(int usuarioId) {
+		dynamic contextoEService = await DefinirContextoEService();
+		IPortfoliosService service = contextoEService.Service;
+
+		var portfolioNovoDto = new PortfolioAtualizacaoDto { Descricao = "novo portfólio - descrição" };
 		
+		ResultadoService resultado = await service.UpdatePortfolioAsync(usuarioId, portfolioNovoDto);
+		PortfolioDto? portfolioResultado = (PortfolioDto?) resultado.Dados;
+		
+		Assert.True(resultado.Sucesso);
+		Assert.Equal(portfolioNovoDto.Descricao, portfolioResultado?.Descricao);
+	}
+	
+	[Fact]
+	public async Task UpdatePortfolioAsync_NaoDeveAtualizarPortfolio_QuandoUsuarioNaoExiste() {
+		dynamic contextoEService = await DefinirContextoEService();
+		IPortfoliosService service = contextoEService.Service;
+
+		int usuarioId = 99;
+		var portfolioNovoDto = new PortfolioAtualizacaoDto { Descricao = "novo portfólio - descrição" };
+		
+		ResultadoService resultado = await service.UpdatePortfolioAsync(usuarioId, portfolioNovoDto);
+		
+		Assert.False(resultado.Sucesso);
+		Assert.NotNull(resultado.Erro);
+		Assert.Null(resultado.Dados);
+	}
+	
+	[Fact]
+	public async Task UpdatePortfolioAsync_NaoDeveAtualizarPortfolio_QuandoPortfolioNaoExiste() {
+		dynamic contextoEService = await DefinirContextoEService();
+		IPortfoliosService service = contextoEService.Service;
+
+		int usuarioId = 3;
+		var portfolioNovoDto = new PortfolioAtualizacaoDto { Descricao = "novo portfólio - descrição" };
+		
+		ResultadoService resultado = await service.UpdatePortfolioAsync(usuarioId, portfolioNovoDto);
+		
+		Assert.False(resultado.Sucesso);
+		Assert.NotNull(resultado.Erro);
+		Assert.Null(resultado.Dados);
 	}
 	#endregion DML
 }
