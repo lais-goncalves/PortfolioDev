@@ -31,20 +31,26 @@ public class PortfoliosService : IPortfoliosService
 	}
 
 	#region Utils
-	private async Task<ResultadoService> UsuarioPodeModificarPortfolio(int usuarioId, int portfolioId)
+	private async Task<ResultadoService> UsuarioPodeModificarPortfolio(int usuarioId)
     	{
-    		// TODO: criar codigo de erro para falta de permissao
+			if (!await _httpUserContext.EstaLogado())
+				return ResultadoService
+						.Falhou("O usuário deve estar logado.", CodigoErro.PERMISSAO_NEGADA);
+			
     		int? id = await _usuariosCommands.BuscarPortfolioIdDoUsuarioAsync(usuarioId);
     		if (id == null)
     			return ResultadoService
-    				.Falhou("Portfólio não existente.");
+    				.Falhou("Portfólio não existente.", CodigoErro.ITEM_NAO_ENCONTRADO);
     
     		bool pertenceAoUsuario = await _portfoliosCommands
     			.PortfolioPertenceAoUsuarioAsync((int)id, usuarioId);
     
     		if (!pertenceAoUsuario)
-    			return ResultadoService
-    				.Falhou("Você não tem permissão para modificar este portfólio.");
+    			return ResultadoService.Falhou
+					(
+						"Você não tem permissão para modificar este portfólio.", 
+						CodigoErro.PERMISSAO_NEGADA
+					);
     
     		return ResultadoService.Ok();
     	}
@@ -104,7 +110,7 @@ public class PortfoliosService : IPortfoliosService
 		{
 			int usuarioId = _httpUserContext.Id;
 
-			ResultadoService resultadoPodeEditar = await UsuarioPodeModificarPortfolio(usuarioId, portfolioDTO.Id);
+			ResultadoService resultadoPodeEditar = await UsuarioPodeModificarPortfolio(usuarioId);
 			if (!resultadoPodeEditar.Sucesso) return resultadoPodeEditar;
 
 			return await UpdatePortfolioAsync(usuarioId, portfolioDTO);
@@ -123,11 +129,20 @@ public class PortfoliosService : IPortfoliosService
 			Portfolio? portfolioExistente = await _portfoliosCommands
 				.BuscarPortfolioPorIdUsuarioAsync(usuarioId);
 
-			if (portfolioExistente == null) throw new Exception("Portfólio não existente.");
+			if (portfolioExistente == null) 
+				return ResultadoService
+					.Falhou("Portfólio não existente.", CodigoErro.ITEM_NAO_ENCONTRADO);
 
+			int id = portfolioExistente.Id;
+			
 			Portfolio portfolioASerAtualizado = _mapper.Map(portfolioDTO, portfolioExistente);
+			portfolioASerAtualizado.Id = id;
+			portfolioASerAtualizado.UsuarioId = usuarioId;
+			
 			bool atualizou = await _portfoliosCommands.UpdateAsync(portfolioASerAtualizado);
-			if (!atualizou) throw new Exception("Houve um erro ao tentar atualizar portfólio.");
+			if (!atualizou) 
+				return ResultadoService
+					.Falhou("Houve um erro ao tentar atualizar portfólio.", CodigoErro.UPDATE_NAO_EFETUADO);
 
 			ResultadoService resultadoPortfolio = await BuscarPortfolioPorIdAsync(portfolioExistente.Id);
 			if (!resultadoPortfolio.Sucesso || resultadoPortfolio.Dados == null)
@@ -157,7 +172,7 @@ public class PortfoliosService : IPortfoliosService
 				return ResultadoService
 					.Falhou("Portfólio não existente.");
 
-			ResultadoService resultadoPodeEditar = await UsuarioPodeModificarPortfolio(usuarioId, (int)portfolioId);
+			ResultadoService resultadoPodeEditar = await UsuarioPodeModificarPortfolio(usuarioId);
 			if (!resultadoPodeEditar.Sucesso) return resultadoPodeEditar;
 
 			ResultadoService resultado = await DeletePortfolioAsync((int)portfolioId);
