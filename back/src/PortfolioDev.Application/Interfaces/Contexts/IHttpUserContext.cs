@@ -9,4 +9,5 @@ public interface IHttpUserContext
 	public bool EhAdmin { get; }
 
 	public Task<Usuario?> ToUsuarioAsync();
+	public Task<bool> EstaLogado();
 }

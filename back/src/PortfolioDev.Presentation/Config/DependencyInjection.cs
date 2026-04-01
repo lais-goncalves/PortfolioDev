@@ -43,19 +43,16 @@ public static class DependencyInjection
 			{
 				options.ExpireTimeSpan = TimeSpan.FromMinutes(120);
 
-				// Eventos aqui, no lugar certo
 				options.Events = new CookieAuthenticationEvents
 				{
 					OnRedirectToLogin = ctx =>
 					{
-						if (ctx.Request.Path.StartsWithSegments("/") && ctx.Response.StatusCode == 200)
-							ctx.Response.StatusCode = 401;
+						ctx.Response.StatusCode = 401;
 						return Task.CompletedTask;
 					},
 					OnRedirectToAccessDenied = ctx =>
 					{
-						if (ctx.Request.Path.StartsWithSegments("/") && ctx.Response.StatusCode == 200)
-							ctx.Response.StatusCode = 403;
+						ctx.Response.StatusCode = 403;
 						return Task.CompletedTask;
 					}
 				};

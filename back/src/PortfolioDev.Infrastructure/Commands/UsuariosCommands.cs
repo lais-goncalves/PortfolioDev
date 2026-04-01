@@ -56,10 +56,11 @@ public class UsuariosCommands : IUsuariosCommands
 		bool usuarioExiste = queryUsuario.Any(u => u.Id == usuarioId);
 		if (!usuarioExiste) return null;
 
-		return await _contexto.Portfolios
-			.Where(p => p.UsuarioId == usuarioId)
-			.Select(p => (int?)p.Id)
-			.FirstOrDefaultAsync();
+		var query = _contexto.Portfolios
+			.Where(p => p.UsuarioId == usuarioId);
+		
+		var resultado = await query.FirstOrDefaultAsync();
+		return resultado?.Id;
 	}
 
 	public async Task<Dictionary<int, int?>> BuscarPortfolioIdsPorUsuariosAsync(List<int> usuarioIds)

@@ -30,9 +30,14 @@ public class HttpUserContext : IHttpUserContext
 	public async Task<Usuario?> ToUsuarioAsync()
 	{
 		string? id = HttpUser.FindFirstValue(ClaimTypes.NameIdentifier);
-		if (id == null) return null;
+		if (string.IsNullOrEmpty(id)) return null;
 
 		return await _userManager.FindByIdAsync(id);
+	}
+	
+	public async Task<bool> EstaLogado()
+	{
+		return await ToUsuarioAsync() != null;
 	}
 
 	private int BuscarId()

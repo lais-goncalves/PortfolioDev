@@ -129,12 +129,11 @@ public class PortfoliosController : ControllerBase
 	}
 
 	[Authorize(Policy = "Dev")]
-	[HttpPut("Id/{id}:int")]
-	public async Task<IActionResult> Put(int id, [FromBody] PortfolioAtualizacaoDto portfolioDto)
+	[HttpPut]
+	public async Task<IActionResult> Put([FromBody] PortfolioAtualizacaoDto portfolioDto)
 	{
 		try
 		{
-			portfolioDto.Id = id;
 			ResultadoService resultado = await _portfoliosService.UpdatePortfolioComAuthAsync(portfolioDto);
 			if (!resultado.Sucesso) return BadRequest(resultado.Erro);
 
