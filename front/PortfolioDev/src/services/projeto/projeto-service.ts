@@ -64,20 +64,23 @@ export class ProjetoService {
       usuario => {
         if (!usuario || usuario.portfolioId == null) return;
 
-        this.definirProjetos(usuario?.portfolioId);
+        this.buscarProjetosApi(usuario?.portfolioId);
       },
       erro => {
         console.log(erro);
         this.projetosSubject.next([]);
       },
-      () => {
-        this.jaCarregouProjetosSubject.next(true);
-      }
+      null
     )
   }
 
-  private definirProjetos(portfolioId: number): void {
+  private buscarProjetosApi(portfolioId: number): void {
     this.jaCarregouProjetosSubject.next(false);
+
+    if (portfolioId == null || portfolioId == 0) {
+      this.projetosSubject.next([]);
+      return;
+    }
 
     this
       .projetoApi

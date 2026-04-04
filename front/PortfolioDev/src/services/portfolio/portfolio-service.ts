@@ -52,9 +52,14 @@ export class PortfolioService {
     this.definirPortfolio();
   }
 
+  private definirUserNameComBaseNosParams(params: any): void {
+    this.userNameUsuarioDonoSubject.next(params['username']);
+  }
+
   private definirPortfolio(): void {
-    if (this.usuarioDonoSubject.getValue()?.userName === null) {
+    if (!this.usuarioDonoSubject.getValue()?.portfolioId) {
       this.portfolioSubject.next(null);
+      this.jaCarregouPortfolioSubject.next(true);
       return;
     }
 
@@ -65,27 +70,21 @@ export class PortfolioService {
       )
       .pipe(
         filter(p => {
-          return !!p || this.jaCarregouPortfolioSubject.getValue();
+          return !!p && !!p.id || this.jaCarregouPortfolioSubject.getValue();
         }),
         take(1)
       )
       .subscribe({
         next: portfolio => {
-          console.log(portfolio)
           this.portfolioSubject.next(portfolio);
         },
         error: error => {
-          console.log(error);
           this.portfolioSubject.next(null);
         },
         complete: () => {
           this.jaCarregouPortfolioSubject.next(true);
         }
       });
-  }
-
-  private definirUserNameComBaseNosParams(params: any): void {
-    this.userNameUsuarioDonoSubject.next(params['username']);
   }
 
   private buscarUsuarioDonoEPortfolio(): void {
@@ -99,7 +98,7 @@ export class PortfolioService {
       )
       .subscribe({
         next: res => {
-          if (res == null) this.router.navigate(['/']);
+          if (!res) this.router.navigate(['/']);
           this.usuarioDonoSubject.next(res as Usuario);
           this.definirPortfolio();
         },
