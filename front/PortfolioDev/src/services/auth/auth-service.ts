@@ -29,7 +29,6 @@ export class AuthService {
   get usuario$(): Observable<Usuario | null> {
     return this.usuarioEstado$.pipe(
       filter(u => u !== NAO_CARREGADO),
-      tap(u => console.log("usuário: ", u?.userName)),
       map(u => u as Usuario | null)
     );
   }
@@ -48,7 +47,6 @@ export class AuthService {
   carregarUsuarioAtual() {
     this.jaCarregou = false;
 
-    // TODO: entender como isso funciona
     const options: any = {withCredentials: true};
 
     if (isPlatformServer(this.platformId) && this.request) {
@@ -60,13 +58,10 @@ export class AuthService {
 
     this.httpService.enviarGET('/Autenticar/Usuario', options).subscribe({
       next: (data: any) => {
-        console.log("dados brutos da API:", data, typeof data);
-        console.log("usuário carregado com sucesso")
         this.usuarioEstadoSubject.next(data as Usuario);
         this.jaCarregou = true;
       },
       error: (e) => {
-        console.log("houve um erro ao tentar carregar usuário")
         this.usuarioEstadoSubject.next(null);
         this.jaCarregou = true;
       }
