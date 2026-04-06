@@ -31,29 +31,20 @@ export class PortfolioService {
   public usuarioDono$: Observable<Usuario | null> =
     this.usuarioDonoSubject.asObservable();
 
-  private userNameUsuarioDonoSubject: BehaviorSubject<string | null> =
-    new BehaviorSubject<string | null>(null);
-
   constructor(
     private authService: AuthService,
-    private portfolioApiService: PortfolioApiService,
-    private usuarioService: UsuarioService,
-    private router: Router
+    private portfolioApiService: PortfolioApiService
   ) {
   }
 
-  public inicializar(params: any): void {
-    this.definirUserNameComBaseNosParams(params);
-    this.buscarUsuarioDonoEPortfolio();
+  public inicializar(usuario: Usuario | null): void {
+    this.definirUsuarioDono(usuario);
+    this.definirPortfolio();
     this.definirSePertenceAoUsuarioAtual();
   }
 
-  public recarregar(): void {
-    this.definirPortfolio();
-  }
-
-  private definirUserNameComBaseNosParams(params: any): void {
-    this.userNameUsuarioDonoSubject.next(params['username']);
+  private definirUsuarioDono(usuario: Usuario | null): void {
+    this.usuarioDonoSubject.next(usuario);
   }
 
   private definirPortfolio(): void {
@@ -87,41 +78,19 @@ export class PortfolioService {
       });
   }
 
-  private buscarUsuarioDonoEPortfolio(): void {
-    this.usuarioService
-      .buscarPorUserName(this.userNameUsuarioDonoSubject.getValue() ?? "")
-      .pipe(
-        filter(p => {
-          return !!p || this.jaCarregouPortfolioSubject.getValue();
-        }),
-        take(1)
-      )
-      .subscribe({
-        next: res => {
-          if (!res) this.router.navigate(['/']);
-          this.usuarioDonoSubject.next(res as Usuario);
-          this.definirPortfolio();
-        },
-        error: error => {
-          console.log(error);
-          this.usuarioDonoSubject.next(null);
-        }
-      });
-  }
-
   private userNameConfere(
-    userName1: string,
-    userName2: string
-  ): boolean {
-    return userName1 === userName2;
+    n1: string | null | undefined,
+    n2: string | null | undefined
+  ) {
+    return (n1 ?? "") === (n2 ?? "");
   }
 
   private definirSePertenceAoUsuarioAtual() {
     this.authService.usuario$.subscribe({
       next: (usuario: Usuario | null) => {
         const podeEditar = this.userNameConfere(
-          usuario?.userName ?? "",
-          this.userNameUsuarioDonoSubject.getValue() ?? ""
+          usuario?.userName,
+          this.usuarioDonoSubject.getValue()?.userName
         );
 
         this.pertenceAoUsuarioSubject.next(podeEditar);

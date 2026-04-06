@@ -2,14 +2,20 @@ import {Component, OnInit} from '@angular/core';
 import {Header} from './header/header';
 import {Projetos} from './projetos/projetos';
 import {Portfolio as PortfolioModel} from '../../../models/portfolio/portfolio';
-import {Observable} from 'rxjs';
+import {BehaviorSubject, filter, map, Observable, take, tap} from 'rxjs';
 import {AsyncPipe} from '@angular/common';
 import {Secao} from './secao/secao';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {ToastrService} from 'ngx-toastr';
 import {NgxSpinnerService} from 'ngx-spinner';
 import {PortfolioApiService} from '../../../services/portfolio/portfolio-api/portfolio-api-service';
 import {PortfolioService} from '../../../services/portfolio/portfolio-service';
+import {AuthService} from '../../../services/auth/auth-service';
+import {UsuarioService} from '../../../services/usuario/usuario-service';
+import {Usuario} from '../../../models/usuario/usuario';
+
+export const NAO_CARREGADO = Symbol("NAO_CARREGADO");
+export type EstadoUsuarioDono = Usuario | null | typeof NAO_CARREGADO;
 
 @Component({
   selector: 'app-portfolio',
@@ -24,9 +30,25 @@ import {PortfolioService} from '../../../services/portfolio/portfolio-service';
   styleUrl: './portfolio.scss',
 })
 export class Portfolio implements OnInit {
+  private usuarioCarregouSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+
+  private usuarioDonoSubject: BehaviorSubject<EstadoUsuarioDono | null> =
+    new BehaviorSubject<EstadoUsuarioDono | null>(NAO_CARREGADO);
+
+  public usuarioDono$: Observable<Usuario | null> =
+    this.usuarioDonoSubject.asObservable().pipe(
+      map((usuario) => {
+        if (usuario == NAO_CARREGADO) return null;
+        return usuario;
+      })
+    );
+
   constructor(
     private portfolioApiService: PortfolioApiService,
     private portfolioService: PortfolioService,
+    private usuarioService: UsuarioService,
+    private authService: AuthService,
+    private router: Router,
     private activatedRoute: ActivatedRoute,
     private toastr: ToastrService,
     private spinner: NgxSpinnerService
@@ -48,9 +70,79 @@ export class Portfolio implements OnInit {
   ngOnInit() {
     this.spinner.show();
 
-    this.buscarRouteParams((params): void => {
-      this.portfolioService.inicializar(params);
-      this.esconderCarregamento();
+    this.buscarParamsRota((params): void => {
+      this.inicializar(params);
+    });
+
+    this.esconderCarregamento();
+  }
+
+  private inicializar(params: any): void {
+    console.log("dono: " + params["username"])
+    this.buscarUsuarioDono(params["username"]);
+    this.buscarPortfolio();
+  }
+
+  private buscarParamsRota(callback: ({}: any) => void): void {
+    this
+      .activatedRoute
+      .params
+      .subscribe((params) => callback(params));
+  }
+
+  private buscarUsuarioDono(userName: string): void {
+    this.usuarioService
+      .buscarPorUserName(userName)
+      .pipe(take(1))
+      .subscribe({
+        next: res => {
+          console.log("carregou usuário")
+          this.usuarioDonoSubject.next(res as Usuario);
+        },
+        error: error => {
+          console.log(error);
+          console.log("carregou usuário - erro")
+          this.usuarioDonoSubject.next(null);
+        },
+        complete: () => this.usuarioCarregouSubject.next(true)
+      });
+  }
+
+  private buscarPortfolio(): void {
+    this.usuarioDonoSubject
+      .pipe(
+        tap((usuario) => {
+          console.log("tap: " + (usuario !== NAO_CARREGADO))
+        }),
+        filter((usuario) => usuario !== NAO_CARREGADO),
+        take(1)
+      )
+      .subscribe(usuario => {
+        if (!this.usuarioDonoSubject.getValue()) {
+          this.router.navigate(['/home']);
+          this.spinner.hide();
+          return;
+        }
+
+        this.portfolioService.inicializar(usuario as Usuario);
+      });
+  }
+
+  private esconderCarregamento(): void {
+    this.usuarioCarregouSubject.subscribe((carregou) => {
+      if (!carregou) return;
+
+      if (!this.usuarioDonoSubject.getValue()) {
+        this.spinner.hide();
+        return;
+      }
+
+      this.jaCarregouPortfolio$.subscribe({
+        next: carregou => {
+          if (carregou) this.spinner.hide();
+        },
+        error: () => this.spinner.hide()
+      });
     });
   }
 
@@ -79,21 +171,5 @@ export class Portfolio implements OnInit {
           );
         }
       });
-  }
-
-  private esconderCarregamento(): void {
-    this.jaCarregouPortfolio$.subscribe({
-      next: jaCarregou => {
-        if (jaCarregou) this.spinner.hide();
-      },
-      error: () => this.spinner.hide()
-    });
-  }
-
-  private buscarRouteParams(callback: ({}: any) => void): void {
-    this
-      .activatedRoute
-      .params
-      .subscribe((params) => callback(params));
   }
 }
