@@ -68,8 +68,6 @@ export class Portfolio implements OnInit {
   }
 
   ngOnInit() {
-    this.spinner.show();
-
     this.buscarParamsRota((params): void => {
       this.inicializar(params);
     });
@@ -78,15 +76,19 @@ export class Portfolio implements OnInit {
   }
 
   private inicializar(params: any): void {
-    console.log("dono: " + params["username"])
-    this.buscarUsuarioDono(params["username"]);
+    this.spinner.show();
+
+    this.usuarioDonoSubject.next(NAO_CARREGADO);
+    this.usuarioCarregouSubject.next(false);
+
+    this.buscarUsuarioDono(params.get("username"));
     this.buscarPortfolio();
   }
 
   private buscarParamsRota(callback: ({}: any) => void): void {
     this
       .activatedRoute
-      .params
+      .paramMap
       .subscribe((params) => callback(params));
   }
 
