@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using PortfolioDev.Application.Interfaces.Commands;
 using PortfolioDev.Domain.Models;
@@ -65,10 +66,21 @@ public class ProjetosCommands : IProjetosCommands
 		return await query.ToArrayAsync();
 	}
 
+	private IQueryable<Projeto> DefaultQuery()
+	{
+		IQueryable<Projeto> query = _contexto
+			.Projetos
+			.IgnoreAutoIncludes()
+			.Include(p => p.Linguagens)
+			.Include(p => p.Frameworks)
+			.Include(p => p.Ferramentas);
+
+		return query;
+	}
+
 	public async Task<Projeto?> BuscarProjetoPorIdAsync(int id)
 	{
-		IQueryable<Projeto> query =
-			_contexto.Projetos.IgnoreAutoIncludes();
+		IQueryable<Projeto> query = DefaultQuery();
 
 		Projeto? projeto = await query.FirstOrDefaultAsync(p => p.Id == id);
 
@@ -77,14 +89,19 @@ public class ProjetosCommands : IProjetosCommands
 
 	public async Task<Projeto[]> BuscarProjetosPorIdPortfolioAsync(int portfolioId)
 	{
-		IQueryable<Portfolio> query = _contexto
+		IQueryable<Portfolio> queryPortfolio = _contexto
 			.Portfolios
 			.IgnoreAutoIncludes()
 			.Include(p => p.Projetos);
+		
+		IQueryable<Projeto> queryProjetos = DefaultQuery();
 
-		Projeto[] projetos = await query
+		Projeto[] projetos = await queryPortfolio
 			.Where(p => p.Id == portfolioId)
 			.SelectMany(p => p.Projetos)
+			.Include(p => p.Linguagens)
+			.Include(p => p.Frameworks)
+			.Include(p => p.Ferramentas)
 			.ToArrayAsync();
 
 		return projetos;
@@ -92,9 +109,9 @@ public class ProjetosCommands : IProjetosCommands
 
 	public async Task<Projeto[]> BuscarProjetosPorIdUsuarioAsync(int usuarioId)
 	{
-		IQueryable<Projeto> query = _contexto
-			.Projetos
-			.IgnoreAutoIncludes()
+		IQueryable<Projeto> query = DefaultQuery();
+			
+		query = query
 			.Include(p => p.Portfolio)
 			.ThenInclude(p => p.Usuario);
 
@@ -107,9 +124,9 @@ public class ProjetosCommands : IProjetosCommands
 
 	public async Task<Projeto[]> BuscarProjetosPorUserNameUsuarioAsync(string userName)
 	{
-		IQueryable<Projeto> query = _contexto
-			.Projetos
-			.IgnoreAutoIncludes()
+		IQueryable<Projeto> query = DefaultQuery();
+			
+		query = query
 			.Include(p => p.Portfolio)
 			.ThenInclude(p => p.Usuario);
 
