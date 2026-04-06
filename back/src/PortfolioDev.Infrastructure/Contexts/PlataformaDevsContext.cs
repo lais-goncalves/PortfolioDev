@@ -17,6 +17,10 @@ public class PlataformaDevsContext
 	public DbSet<Usuario> Usuarios { get; set; }
 	public DbSet<Portfolio> Portfolios { get; set; }
 	public DbSet<Projeto> Projetos { get; set; }
+	public DbSet<Linguagem> Linguagens { get; set; }
+	public DbSet<Framework> Frameworks { get; set; }
+	public DbSet<Ferramenta> Ferramentas { get; set; }
+	
 	
 	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 	{
@@ -37,5 +41,21 @@ public class PlataformaDevsContext
 			.HasMany(p => p.Projetos)
 			.WithOne(p => p.Portfolio)
 			.HasForeignKey(p => p.PortfolioId);
+
+		modelBuilder.Entity<Projeto>()
+			.HasMany(p => p.Linguagens)
+			.WithMany(f => f.Projetos);
+		
+		modelBuilder.Entity<Projeto>()
+			.HasMany(p => p.Frameworks)
+			.WithMany(f => f.Projetos);
+		
+		modelBuilder.Entity<Projeto>()
+			.HasMany(p => p.Ferramentas)
+			.WithMany(f => f.Projetos);
+		
+		modelBuilder.Entity<Linguagem>()
+			.HasMany(l => l.Frameworks)
+			.WithMany(f => f.Linguagens);
 	}
 }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PortfolioDev.Infrastructure.DbContexts;
@@ -11,9 +12,11 @@ using PortfolioDev.Infrastructure.DbContexts;
 namespace PortfolioDev.Infrastructure.Migrations
 {
     [DbContext(typeof(PlataformaDevsContext))]
-    partial class PlataformaDevsContextModelSnapshot : ModelSnapshot
+    [Migration("20260406041111_AddFrameworksFerramentasLinguagens")]
+    partial class AddFrameworksFerramentasLinguagens
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,21 +24,6 @@ namespace PortfolioDev.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("FerramentaProjeto", b =>
-                {
-                    b.Property<int>("FerramentasId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ProjetosId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("FerramentasId", "ProjetosId");
-
-                    b.HasIndex("ProjetosId");
-
-                    b.ToTable("FerramentaProjeto");
-                });
 
             modelBuilder.Entity("FrameworkLinguagem", b =>
                 {
@@ -50,36 +38,6 @@ namespace PortfolioDev.Infrastructure.Migrations
                     b.HasIndex("LinguagensId");
 
                     b.ToTable("FrameworkLinguagem");
-                });
-
-            modelBuilder.Entity("FrameworkProjeto", b =>
-                {
-                    b.Property<int>("FrameworksId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ProjetosId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("FrameworksId", "ProjetosId");
-
-                    b.HasIndex("ProjetosId");
-
-                    b.ToTable("FrameworkProjeto");
-                });
-
-            modelBuilder.Entity("LinguagemProjeto", b =>
-                {
-                    b.Property<int>("LinguagensId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ProjetosId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("LinguagensId", "ProjetosId");
-
-                    b.HasIndex("ProjetosId");
-
-                    b.ToTable("LinguagemProjeto");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<int>", b =>
@@ -396,21 +354,6 @@ namespace PortfolioDev.Infrastructure.Migrations
                     b.ToTable("Projetos");
                 });
 
-            modelBuilder.Entity("FerramentaProjeto", b =>
-                {
-                    b.HasOne("PortfolioDev.Domain.Models.Ferramenta", null)
-                        .WithMany()
-                        .HasForeignKey("FerramentasId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PortfolioDev.Domain.Models.Projeto", null)
-                        .WithMany()
-                        .HasForeignKey("ProjetosId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("FrameworkLinguagem", b =>
                 {
                     b.HasOne("PortfolioDev.Domain.Models.Framework", null)
@@ -422,36 +365,6 @@ namespace PortfolioDev.Infrastructure.Migrations
                     b.HasOne("PortfolioDev.Domain.Models.Linguagem", null)
                         .WithMany()
                         .HasForeignKey("LinguagensId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("FrameworkProjeto", b =>
-                {
-                    b.HasOne("PortfolioDev.Domain.Models.Framework", null)
-                        .WithMany()
-                        .HasForeignKey("FrameworksId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PortfolioDev.Domain.Models.Projeto", null)
-                        .WithMany()
-                        .HasForeignKey("ProjetosId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("LinguagemProjeto", b =>
-                {
-                    b.HasOne("PortfolioDev.Domain.Models.Linguagem", null)
-                        .WithMany()
-                        .HasForeignKey("LinguagensId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PortfolioDev.Domain.Models.Projeto", null)
-                        .WithMany()
-                        .HasForeignKey("ProjetosId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
