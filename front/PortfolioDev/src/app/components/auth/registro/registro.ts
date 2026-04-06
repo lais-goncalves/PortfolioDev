@@ -39,7 +39,6 @@ export class Registro extends Form implements OnInit {
 
   public definirCargosSelecionados(): void {
     var valores = this.form.value as RegistroDto;
-    console.log(valores)
   }
 
   public registrarUsuario(): void {

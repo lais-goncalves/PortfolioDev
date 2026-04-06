@@ -87,7 +87,6 @@ export class ProjetoService {
       .buscarProjetosPorPortfolioId(portfolioId)
       .subscribe({
         next: (projetos) => {
-          console.log(projetos);
           this.projetosSubject.next(projetos);
         },
         error: err => {

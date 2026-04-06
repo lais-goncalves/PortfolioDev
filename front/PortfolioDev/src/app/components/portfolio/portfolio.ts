@@ -98,12 +98,10 @@ export class Portfolio implements OnInit {
       .pipe(take(1))
       .subscribe({
         next: res => {
-          console.log("carregou usuário")
           this.usuarioDonoSubject.next(res as Usuario);
         },
         error: error => {
           console.log(error);
-          console.log("carregou usuário - erro")
           this.usuarioDonoSubject.next(null);
         },
         complete: () => this.usuarioCarregouSubject.next(true)
@@ -113,9 +111,6 @@ export class Portfolio implements OnInit {
   private buscarPortfolio(): void {
     this.usuarioDonoSubject
       .pipe(
-        tap((usuario) => {
-          console.log("tap: " + (usuario !== NAO_CARREGADO))
-        }),
         filter((usuario) => usuario !== NAO_CARREGADO),
         take(1)
       )
