@@ -56,6 +56,8 @@ public class PlataformaDevsContext
 		
 		modelBuilder.Entity<Linguagem>()
 			.HasMany(l => l.Frameworks)
-			.WithMany(f => f.Linguagens);
+			.WithOne(f => f.Linguagem)
+			.HasForeignKey(l => l.LinguagemId)
+			.OnDelete(DeleteBehavior.Cascade);
 	}
 }
